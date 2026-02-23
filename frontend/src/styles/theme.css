@@ -402,6 +402,58 @@ select:focus {
   color: var(--danger);
 }
 
+.chat-shell {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.chat-list {
+  min-height: 360px;
+  max-height: 56vh;
+  overflow: auto;
+  display: grid;
+  gap: 12px;
+  padding-right: 4px;
+}
+
+.chat-item {
+  max-width: 86%;
+  padding: 12px 14px;
+  border: 1px solid rgba(110, 141, 255, 0.3);
+  border-radius: 8px;
+}
+
+.chat-user {
+  justify-self: end;
+  background: rgba(35, 143, 137, 0.18);
+  border-color: rgba(78, 245, 214, 0.48);
+}
+
+.chat-assistant {
+  justify-self: start;
+  background: rgba(26, 18, 68, 0.72);
+}
+
+.chat-role {
+  margin: 0 0 6px;
+  color: #b7f9eb;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+}
+
+.chat-text {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.65;
+}
+
+.chat-input-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
 .spot-grid {
   display: grid;
   gap: var(--space-2);

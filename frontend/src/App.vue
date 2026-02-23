@@ -7,7 +7,8 @@
           <span>潮韵云脑</span>
         </RouterLink>
         <nav class="nav-links" aria-label="主导航">
-          <RouterLink to="/">行程规划</RouterLink>
+          <RouterLink to="/">智能对话</RouterLink>
+          <RouterLink to="/planner">行程规划</RouterLink>
           <RouterLink to="/profile">我的信息</RouterLink>
           <div class="model-dropdown-wrap">
             <button class="model-trigger" type="button" @click="toggleModelMenu">

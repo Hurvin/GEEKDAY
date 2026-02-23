@@ -33,3 +33,21 @@ class ModelOption(BaseModel):
     value: str
     label: str
     desc: str
+
+
+class ChatMessage(BaseModel):
+    role: str = Field(..., description="system/user/assistant")
+    content: str
+
+
+class ChatRequest(BaseModel):
+    message: str = Field(..., min_length=1, description="用户当前输入")
+    history: List[ChatMessage] = Field(default_factory=list, description="历史对话")
+    model: str | None = Field(default=None, description="可选模型ID")
+    user_id: str = Field(default="default", description="用户唯一标识")
+    user_profile: dict = Field(default_factory=dict, description="用户画像信息")
+
+
+class ChatResponse(BaseModel):
+    reply: str
+    model_used: str
