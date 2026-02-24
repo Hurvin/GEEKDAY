@@ -11,7 +11,33 @@ body {
   min-height: 100vh;
   color: var(--text-main);
   font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  background: url('/bg.jpg') center/cover no-repeat;
+  filter: blur(15px);
+  transform: scale(1.1);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
   background:
+    url('/clouds.svg') center/400px repeat,
     linear-gradient(120deg, rgba(50, 35, 126, 0.65), rgba(11, 9, 29, 0.95)),
     repeating-linear-gradient(
       0deg,
@@ -19,8 +45,8 @@ body {
       rgba(139, 159, 255, 0.08) 1px,
       transparent 1px,
       transparent 24px
-    ),
-    var(--bg-0);
+    );
+  pointer-events: none;
 }
 
 #app {
@@ -85,11 +111,10 @@ body {
   text-decoration: none;
 }
 
-.brand-mark {
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--accent);
-  box-shadow: 0 0 12px rgba(78, 245, 214, 0.45);
+.brand-logo {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
 }
 
 .nav-links {
@@ -104,16 +129,13 @@ body {
   text-decoration: none;
   font-size: 0.92rem;
   padding: 6px 10px;
-  border: 1px solid rgba(110, 141, 255, 0.2);
   border-radius: 2px;
   transition: all 220ms ease;
 }
 
 .nav-links a:hover {
-  border-color: rgba(78, 245, 214, 0.55);
   color: var(--accent);
   background: rgba(78, 245, 214, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(78, 245, 214, 0.18);
 }
 
 .model-dropdown-wrap {
@@ -121,7 +143,6 @@ body {
 }
 
 .model-trigger {
-  border: 1px solid rgba(110, 141, 255, 0.2);
   background: rgba(9, 15, 38, 0.4);
   color: var(--text-main);
   font-size: 0.92rem;
@@ -137,7 +158,6 @@ body {
 }
 
 .model-trigger:hover {
-  border-color: rgba(78, 245, 214, 0.55);
   color: var(--accent);
 }
 
@@ -318,10 +338,10 @@ body {
   color: var(--text-sub);
 }
 
-.panel-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-2);
+/* The .panel-grid styles are now handled in PlannerView.vue for dynamic transition */
+.section-card {
+  padding: var(--space-4) 0;
+  text-align: center;
 }
 
 .glass-card {

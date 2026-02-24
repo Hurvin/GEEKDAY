@@ -3,8 +3,8 @@
     <header class="top-nav">
       <div class="top-nav-inner">
         <RouterLink to="/" class="brand">
-          <span class="brand-mark" aria-hidden="true"></span>
-          <span>潮韵云脑</span>
+          <img src="/logo.png" alt="Logo" class="brand-logo" />
+          <span>潮韵同行</span>
         </RouterLink>
         <nav class="nav-links" aria-label="主导航">
           <RouterLink to="/">智能对话</RouterLink>
@@ -35,6 +35,14 @@
           </div>
           <RouterLink to="/chaoshan">走进潮汕</RouterLink>
           <a href="https://github.com/Hurvin/GEEKDAY" target="_blank" rel="noreferrer">GitHub</a>
+          <button 
+            class="mode-switch-btn" 
+            :class="{ active: isTestMode }"
+            @click="toggleTestMode"
+            :title="isTestMode ? '切换到正常模式' : '切换到测试模式'"
+          >
+            {{ isTestMode ? '测试模式' : '正常模式' }}
+          </button>
         </nav>
       </div>
     </header>
@@ -58,10 +66,20 @@ const fallbackOptions: ModelOption[] = [
 const modelOptions = ref<ModelOption[]>(fallbackOptions);
 const selectedModel = ref<string>(fallbackOptions[0].value);
 const modelMenuOpen = ref(false);
+const isTestMode = ref(false);
 
 const currentModel = computed(
   () => modelOptions.value.find((item) => item.value === selectedModel.value) ?? modelOptions.value[0]
 );
+
+function toggleTestMode() {
+  isTestMode.value = !isTestMode.value;
+  try {
+    localStorage.setItem("chaoyun_test_mode", isTestMode.value ? "true" : "false");
+    // Reload page to apply changes everywhere (simple way to notify components)
+    window.location.reload();
+  } catch {}
+}
 
 function toggleModelMenu() {
   modelMenuOpen.value = !modelMenuOpen.value;
@@ -82,6 +100,9 @@ try {
   if (saved && modelOptions.value.some((item) => item.value === saved)) {
     selectedModel.value = saved;
   }
+  
+  const savedMode = localStorage.getItem("chaoyun_test_mode");
+  isTestMode.value = savedMode === "true";
 } catch {
   // 忽略 localStorage 不可用场景
 }
@@ -100,3 +121,35 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style scoped>
+.mode-switch-btn {
+  background: transparent;
+  border: 1px solid rgba(110, 141, 255, 0.3);
+  color: var(--text-sub);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: all 0.2s;
+}
+
+.mode-switch-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.mode-switch-btn.active {
+  background: rgba(255, 107, 107, 0.2);
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(255, 107, 107, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+}
+</style>

@@ -53,7 +53,7 @@ class LLMClient:
             {
                 "role": "system",
                 "content": (
-                    "你是潮韵云脑行程规划智能体。请严格输出 JSON 对象，不要输出解释性文字。"
+                    "你是潮韵同行行程规划智能体。请严格输出 JSON 对象，不要输出解释性文字。"
                     "JSON 字段必须包含：summary(字符串), itinerary(数组), culture_tips(字符串数组), "
                     "risk_alerts(字符串数组), signal_basis(字符串数组)。"
                     "其中 itinerary 的每一项包含 day(数字), period(字符串), activity(字符串), reason(字符串)。"
@@ -88,7 +88,7 @@ class LLMClient:
 
         if not self.enabled or self.client is None:
             user_message = str(request_data.get("message", "")).strip()
-            fallback_text = "我是潮韵云脑智能体，当前使用离线兜底回复。"
+            fallback_text = "我是潮韵同行智能体，当前使用离线兜底回复。"
             if user_message:
                 fallback_text += f" 你刚刚问的是：{user_message}"
             return {"reply": fallback_text, "model_used": target_model}
@@ -107,7 +107,7 @@ class LLMClient:
             {
                 "role": "system",
                 "content": (
-                    "你是潮韵云脑文旅智能体，请用简洁、友好的中文回答。"
+                    "你是潮韵同行文旅智能体，请用简洁、友好的中文回答。"
                     "需要结合潮汕文旅场景给出可执行建议。"
                     "你将收到三层记忆："
                     "短期记忆（最近3轮原始对话，保留细节）、"

@@ -4,7 +4,7 @@
       <p class="section-tag">CHAT</p>
       <p class="kicker">LANGGRAPH CONVERSATION</p>
       <h1>智能对话</h1>
-      <p class="sub-title">直接和潮韵云脑对话，咨询潮汕玩法、路线与文化建议。</p>
+      <p class="sub-title">直接和潮韵同行对话，咨询潮汕玩法、路线与文化建议。</p>
     </section>
 
     <section class="chat-shell glass-card">
@@ -16,7 +16,15 @@
           :class="item.role === 'user' ? 'chat-user' : 'chat-assistant'"
         >
           <p class="chat-role">{{ item.role === "user" ? "我" : "Agent" }}</p>
-          <p class="chat-text">{{ item.content }}</p>
+          <p class="chat-text">
+            <template v-for="(segment, sIdx) in parseContent(item.content)" :key="sIdx">
+              <SpotTooltip 
+                v-if="segment.type === 'spot'" 
+                :name="segment.text" 
+              />
+              <span v-else>{{ segment.text }}</span>
+            </template>
+          </p>
         </div>
         <p v-if="loading" class="sub-title">正在思考中...</p>
       </div>
@@ -35,15 +43,32 @@
 import { ref } from "vue";
 
 import { sendChat, type ChatMessage } from "../api/chat";
+import SpotTooltip from "../components/SpotTooltip.vue";
+import { spotKeywords } from "../data/spots";
 
 const input = ref("");
 const loading = ref(false);
 const messages = ref<ChatMessage[]>([
   {
     role: "assistant",
-    content: "你好，我是潮韵云脑。你可以问我潮汕景点、美食路线、避坑建议或行程安排。",
+    content: "你好，我是潮韵同行。你可以问我潮汕景点、美食路线、避坑建议或行程安排。",
   },
 ]);
+
+function parseContent(content: string) {
+  if (!content) return [{ type: 'text', text: '' }];
+  
+  // Sort keywords by length descending to match longest first
+  const sortedKeywords = [...spotKeywords].sort((a, b) => b.length - a.length);
+  const regex = new RegExp(`(${sortedKeywords.join('|')})`, 'g');
+  
+  return content.split(regex).map(part => {
+    if (spotKeywords.includes(part)) {
+      return { type: 'spot', text: part };
+    }
+    return { type: 'text', text: part };
+  });
+}
 
 async function submitChat() {
   const text = input.value.trim();

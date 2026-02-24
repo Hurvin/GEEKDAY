@@ -3,7 +3,7 @@
     <section class="hero section-card">
       <p class="section-tag">PREVIEW</p>
       <p class="kicker">23.5°N CHAOSHAN INTEL TRIP AGENT</p>
-      <h1>潮韵云脑</h1>
+      <h1>潮韵同行</h1>
       <p class="sub-title">用动态规划，触碰潮汕文旅认知边界</p>
     </section>
 

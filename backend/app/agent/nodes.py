@@ -4,8 +4,10 @@ from app.agent.tools.crowd import get_crowd_signal
 from app.agent.tools.culture import get_culture_hints
 from app.agent.tools.risk import risk_radar
 from app.agent.tools.weather import get_weather_signal
+from app.agent.tools.social_events import search_social_events
 from app.core.config import settings
 from app.services.llm_client import LLMClient
+
 
 llm_client = LLMClient()
 
@@ -13,9 +15,16 @@ llm_client = LLMClient()
 def collect_signals_node(state: dict) -> dict:
     request = state["request"]
     destination = request.get("destination", "汕头")
-    weather = get_weather_signal(destination, use_mock=settings.use_mock_data)
+    days = request.get("days", 1)
+    
+    # Always try to use real weather data via MCP as requested
+    weather = get_weather_signal(destination, use_mock=False)
     crowd = get_crowd_signal(destination, use_mock=settings.use_mock_data)
-    return {"signals": {"weather": weather, "crowd": crowd}}
+    
+    # New: Collect social events
+    events = search_social_events(destination, days)
+    
+    return {"signals": {"weather": weather, "crowd": crowd, "events": events}}
 
 
 def apply_culture_rules_node(state: dict) -> dict:
@@ -32,9 +41,15 @@ def generate_itinerary_node(state: dict) -> dict:
         "signal_basis": [
             f"天气：{state.get('signals', {}).get('weather', {}).get('condition', '未知')}",
             state.get("signals", {}).get("crowd", {}).get("summary", "暂无人流摘要"),
+            f"本地活动：发现 {len(state.get('signals', {}).get('events', []))} 个近期热门活动",
         ],
     }
     draft = llm_client.generate_itinerary(prompt_data)
+    # Ensure events are passed through if not already in draft (though LLM should include them)
+    # We can inject them into 'culture_tips' or a new field if needed
+    if "events" not in draft:
+        draft["events"] = state.get("signals", {}).get("events", [])
+        
     return {"draft_plan": draft}
 
 
@@ -47,5 +62,6 @@ def risk_refine_node(state: dict) -> dict:
         "culture_tips": draft.get("culture_tips", state.get("culture_hints", [])),
         "risk_alerts": list(dict.fromkeys(draft.get("risk_alerts", []) + alerts)),
         "signal_basis": draft.get("signal_basis", []),
+        "social_events": draft.get("events", []),  # Pass events to frontend
     }
     return {"risk_alerts": alerts, "final_response": final_response}
