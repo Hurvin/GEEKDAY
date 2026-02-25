@@ -325,26 +325,42 @@ async function onSubmit(payload: PlanPayload) {
   }, 700);
   
   try {
-    let profilePayload: any = {};
-    try {
-      const cached = localStorage.getItem("chaoyun_profile");
-      if (cached) {
-        const profile = JSON.parse(cached);
-        profilePayload = {
-           companions: profile.companions || []
-        };
-      }
-    } catch {}
+      let profilePayload: any = {};
+      let cachedProfile: any = null;
+      try {
+        const cached = localStorage.getItem("chaoyun_profile");
+        if (cached) {
+          cachedProfile = JSON.parse(cached);
+          profilePayload = {
+             companions: cachedProfile.companions || []
+          };
+        }
+      } catch {}
 
-    const res = await createPlan({
-      ...payload,
-      model: selectedModel || undefined,
-      companions: profilePayload.companions
-    });
-    result.value = res;
-    stage.value = "final";
-    savePlan(payload, res);
-  } catch (err) {
+      // If start_date is provided, update profile travelDates
+      if (payload.start_date && cachedProfile) {
+        const dates = [];
+        const start = new Date(payload.start_date);
+        for (let i = 0; i < (payload.days || 1); i++) {
+          const d = new Date(start.getTime() + i * 24 * 60 * 60 * 1000);
+          const dateStr = d.toISOString().split('T')[0];
+          dates.push(dateStr);
+        }
+        
+        // Update profile
+        cachedProfile.travelDates = dates;
+        localStorage.setItem("chaoyun_profile", JSON.stringify(cachedProfile));
+      }
+
+      const res = await createPlan({
+        ...payload,
+        model: selectedModel || undefined,
+        ...profilePayload
+      });
+      result.value = res;
+      stage.value = "final";
+      savePlan(payload, res);
+    } catch (err) {
     error.value = err instanceof Error ? err.message : "请求失败，请重试";
     stage.value = "error";
   } finally {

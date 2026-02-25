@@ -17,6 +17,10 @@
       </div>
       <div class="grid-2">
         <label>
+          出发日期 (可选)
+          <input type="date" v-model="form.start_date" :min="minDate" />
+        </label>
+        <label>
           出游风格
           <select v-model="form.travel_style">
             <option>轻松休闲</option>
@@ -25,6 +29,8 @@
             <option>网红打卡</option>
           </select>
         </label>
+      </div>
+      <div class="grid-2">
         <label>
           同行人群
           <select v-model="form.travelers">
@@ -131,6 +137,7 @@ const form = reactive<PlanPayload & {
   clothing_style: string;
   accommodation_type: string;
   transport_preference: string;
+  start_date: string;
 }>({
   destination: "汕头",
   days: 2,
@@ -144,8 +151,10 @@ const form = reactive<PlanPayload & {
   food_preference: ["牛肉火锅", "肠粉/粿条"],
   accommodation_type: "经济型酒店 (性价比)",
   transport_preference: "网约车/出租车",
+  start_date: "",
 });
 
+const minDate = new Date().toISOString().split('T')[0];
 const preferencesText = ref("");
 
 // Companions
@@ -182,12 +191,17 @@ function submitForm() {
     `交通偏好：${form.transport_preference}`,
     ...splitValues(preferencesText.value)
   ];
+  
+  if (form.start_date) {
+    combinedPreferences.push(`出发日期：${form.start_date}`);
+  }
 
   emit("submit", {
     ...form,
     preferences: combinedPreferences,
     constraints: [], // Constraints can be handled in text if needed
     companions: selectedCompanions.value,
+    start_date: form.start_date,
   });
 }
 
