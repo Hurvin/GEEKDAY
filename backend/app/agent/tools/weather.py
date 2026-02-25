@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from app.agent.tools.mock_data import MOCK_WEATHER
-from app.services.weather_mcp import weather_client
+from app.services.mcp_client import mcp_client
 
 
 def get_weather_signal(destination: str, use_mock: bool = True) -> dict:
@@ -14,7 +14,7 @@ def get_weather_signal(destination: str, use_mock: bool = True) -> dict:
     
     # Use real MCP client
     try:
-        result = weather_client.get_weather(destination)
+        result = mcp_client.get_weather(destination)
         
         # Try to parse if the condition is a JSON string (common in tool outputs)
         condition_text = result.get("condition", "")

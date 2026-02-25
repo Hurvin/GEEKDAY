@@ -23,13 +23,21 @@
                 :name="segment.text" 
               />
               <span v-else>{{ segment.text }}</span>
-            </template>
-          </p>
-        </div>
-        <p v-if="loading" class="sub-title">正在思考中...</p>
+        </template>
+      </p>
+    </div>
+    
+    <!-- AI Thinking Indicator -->
+    <div v-if="loading" class="chat-item chat-assistant">
+      <p class="chat-role">Agent</p>
+      <div class="chat-thinking">
+        <img src="/jz.gif" alt="Thinking..." class="thinking-gif" />
+        <span class="thinking-text">正在思考中...</span>
       </div>
+    </div>
+  </div>
 
-      <form class="chat-input-row" @submit.prevent="submitChat">
+  <form class="chat-input-row" @submit.prevent="submitChat">
         <input v-model="input" placeholder="比如：帮我规划一个潮州两日文化游" />
         <button class="neon-btn" type="submit" :disabled="loading || !input.trim()">
           {{ loading ? "发送中..." : "发送" }}
@@ -140,3 +148,73 @@ async function submitChat() {
   }
 }
 </script>
+
+<style scoped>
+.chat-list {
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.chat-item {
+  margin-bottom: 12px;
+}
+
+.chat-user {
+  text-align: right;
+}
+
+.chat-assistant {
+  text-align: left;
+}
+
+.chat-role {
+  font-size: 0.8rem;
+  color: var(--text-sub);
+  margin-bottom: 4px;
+}
+
+.chat-thinking {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(110, 141, 255, 0.2);
+}
+
+.thinking-gif {
+  height: 40px;
+  width: auto;
+  border-radius: 4px;
+}
+
+.thinking-text {
+  color: var(--text-sub);
+  font-size: 0.9rem;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.chat-text {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 10px 14px;
+  border-radius: 8px;
+  line-height: 1.5;
+  color: var(--text-main);
+  max-width: 80%;
+  text-align: left;
+  white-space: pre-wrap;
+}
+
+.chat-user .chat-text {
+  background: rgba(78, 245, 214, 0.15);
+  color: #fff;
+}
+</style>

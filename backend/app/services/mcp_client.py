@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 MCP_SERVER_URL = "https://mcp.api-inference.modelscope.net/97cb26640caa41/mcp"
 
 
-class WeatherMcpClient:
+class McpClient:
     def __init__(self) -> None:
         self.session_id: str | None = None
         self.client = httpx.Client(timeout=30.0)
@@ -51,7 +51,6 @@ class WeatherMcpClient:
 
         except Exception as e:
             logger.error(f"Initialization failed: {e}")
-            # Reset session_id on failure to allow retry
             self.session_id = None
             raise
 
@@ -69,24 +68,19 @@ class WeatherMcpClient:
         except Exception as e:
             logger.error(f"Failed to send notification: {e}")
 
-    def get_weather(self, city: str) -> dict[str, Any]:
+    def call_tool(self, tool_name: str, arguments: dict) -> dict[str, Any]:
         if not self.session_id:
             try:
                 self.initialize()
             except Exception as e:
-                return {
-                    "condition": "未知",
-                    "temperature": 0,
-                    "humidity": 0,
-                    "error": f"MCP Init Failed: {e}",
-                }
+                return {"error": f"MCP Init Failed: {e}"}
 
-        logger.info(f"Querying weather for {city}...")
+        logger.info(f"Calling tool: {tool_name} with args: {arguments}")
         payload = {
             "jsonrpc": "2.0",
             "id": 2,
             "method": "tools/call",
-            "params": {"name": "maps_weather", "arguments": {"city": city}},
+            "params": {"name": tool_name, "arguments": arguments},
         }
         headers = {
             "Content-Type": "application/json",
@@ -98,41 +92,52 @@ class WeatherMcpClient:
             response = self.client.post(MCP_SERVER_URL, json=payload, headers=headers)
             response.raise_for_status()
             data = response.json()
-
-            # Process MCP response
-            # Expected structure: {"jsonrpc": "2.0", "id": 2, "result": {"content": [{"type": "text", "text": "..."}]}}
-            if "result" in data and "content" in data["result"]:
-                content_list = data["result"]["content"]
-                if content_list and content_list[0].get("type") == "text":
-                    text_result = content_list[0].get("text")
-                    # Here we return the raw text as 'condition' for the LLM to process,
-                    # or we could try to parse it if it's JSON.
-                    # Since the downstream node uses it in a prompt, returning the text is fine.
-                    return {
-                        "condition": text_result,  # Put full text in condition so LLM sees it
-                        "temperature": 0, # Placeholder
-                        "humidity": 0,    # Placeholder
-                        "raw": data
-                    }
-
-            return {
-                "condition": "未知",
-                "temperature": 0,
-                "humidity": 0,
-                "raw": data
-            }
-
+            return data
         except Exception as e:
-            logger.error(f"Weather query failed: {e}")
-            # If session is invalid, maybe we should clear it?
-            # For now, just return error.
-            return {
-                "condition": "未知",
-                "temperature": 0,
-                "humidity": 0,
-                "error": str(e),
-            }
+            logger.error(f"Tool call failed: {e}")
+            return {"error": str(e)}
+
+    def get_weather(self, city: str) -> dict[str, Any]:
+        data = self.call_tool("maps_weather", {"city": city})
+        if "result" in data and "content" in data["result"]:
+            content_list = data["result"]["content"]
+            if content_list and content_list[0].get("type") == "text":
+                return {
+                    "condition": content_list[0].get("text"),
+                    "temperature": 0,
+                    "humidity": 0,
+                    "raw": data
+                }
+        return {"condition": "未知", "temperature": 0, "humidity": 0, "raw": data}
+
+    def search_poi(self, keywords: str, city: str = "潮州") -> list[dict]:
+        """Search for POIs (Point of Interest)"""
+        data = self.call_tool("maps_text_search", {"keywords": keywords, "city": city})
+        # Parse logic can be added here based on actual response structure
+        return data
+
+    def search_nearby(self, location: str, keywords: str) -> list[dict]:
+        """Search for nearby places"""
+        data = self.call_tool("maps_around_search", {"location": location, "keywords": keywords})
+        return data
+
+    def get_travel_distance(self, origin: str, destination: str, mode: str = "driving") -> dict:
+        """Get distance and duration between two points"""
+        tool_map = {
+            "driving": "maps_direction_driving",
+            "walking": "maps_direction_walking",
+            "bicycling": "maps_bicycling",
+            "transit": "maps_direction_transit_integrated"
+        }
+        tool_name = tool_map.get(mode, "maps_direction_driving")
+        
+        args = {"origin": origin, "destination": destination}
+        if mode == "transit":
+            args.update({"city": "潮州", "cityd": "潮州"}) # Default city
+            
+        data = self.call_tool(tool_name, args)
+        return data
 
 
 # Singleton instance
-weather_client = WeatherMcpClient()
+mcp_client = McpClient()
