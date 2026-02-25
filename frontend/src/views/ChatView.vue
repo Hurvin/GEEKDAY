@@ -7,11 +7,9 @@
       <p class="sub-title">直接和潮韵同行对话，咨询潮汕玩法、路线与文化建议。</p>
       <div v-if="mcpServices.length > 0" class="mcp-services">
         <p class="mcp-title">支持 MCP 服务：</p>
-        <div class="mcp-service-list">
-          <span v-for="service in mcpServices" :key="service.name" class="mcp-chip" :title="service.description">
-            {{ service.name }}
-          </span>
-        </div>
+        <span v-for="service in mcpServices" :key="service.name" class="mcp-chip" :title="service.name">
+          {{ service.description }}
+        </span>
       </div>
     </section>
 
@@ -190,18 +188,17 @@ async function submitChat() {
 
 .mcp-services {
   margin-top: 10px;
-}
-
-.mcp-title {
-  margin: 0 0 8px;
-  color: var(--text-sub);
-  font-size: 0.9rem;
-}
-
-.mcp-service-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.mcp-title {
+  margin: 0;
+  color: var(--text-sub);
+  font-size: 0.9rem;
 }
 
 .mcp-chip {

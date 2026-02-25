@@ -107,11 +107,11 @@ def consume_fake_events(limit: int = 20) -> FakeEventConsumeResponse:
 @router.get("/mcp/services", response_model=list[McpServiceItem])
 def list_mcp_services() -> list[McpServiceItem]:
     return [
-        McpServiceItem(name="maps_weather", description="查询目的地天气与变化趋势"),
-        McpServiceItem(name="maps_text_search", description="关键词检索景点/美食/地点"),
-        McpServiceItem(name="maps_around_search", description="按位置查找周边服务与设施"),
-        McpServiceItem(name="maps_direction_driving", description="驾车路线与时长估算"),
-        McpServiceItem(name="maps_direction_walking", description="步行路线与时长估算"),
-        McpServiceItem(name="maps_bicycling", description="骑行路线与时长估算"),
-        McpServiceItem(name="maps_direction_transit_integrated", description="公交/地铁换乘路线建议"),
+        McpServiceItem(name="maps_weather", description="询问天气"),
+        McpServiceItem(name="maps_text_search", description="搜索地点"),
+        McpServiceItem(name="maps_around_search", description="周边推荐"),
+        McpServiceItem(name="maps_direction_driving", description="驾车导航"),
+        McpServiceItem(name="maps_direction_walking", description="步行导航"),
+        McpServiceItem(name="maps_bicycling", description="骑行导航"),
+        McpServiceItem(name="maps_direction_transit_integrated", description="公交地铁"),
     ]
