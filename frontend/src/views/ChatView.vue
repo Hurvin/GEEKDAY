@@ -194,6 +194,7 @@ async function submitChat() {
       food_preferences?: string[];
       budget_level?: string;
       note?: string;
+      companions?: any[];
     } = {};
     try {
       const cached = localStorage.getItem("chaoyun_profile");
@@ -205,6 +206,7 @@ async function submitChat() {
           foodPreferences?: string[];
           budgetLevel?: string;
           note?: string;
+          companions?: any[];
         };
         profilePayload = {
           departure_city: profile.departureCity ?? "",
@@ -213,6 +215,7 @@ async function submitChat() {
           food_preferences: profile.foodPreferences ?? [],
           budget_level: profile.budgetLevel ?? "",
           note: profile.note ?? "",
+          companions: profile.companions ?? [],
         };
       }
     } catch {

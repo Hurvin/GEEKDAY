@@ -48,6 +48,7 @@ def _sync_long_term_markdown(data: dict[str, Any]) -> None:
                 f"- food_preferences: {', '.join(profile.get('food_preferences', []))}",
                 f"- budget_level: {profile.get('budget_level', '')}",
                 f"- note: {profile.get('note', '')}",
+                f"- companions: {json.dumps(profile.get('companions', []), ensure_ascii=False)}",
                 "",
             ]
         )
@@ -96,6 +97,7 @@ def update_user_profile(user_id: str, profile_data: dict[str, Any]) -> dict[str,
         "food_preferences": profile_data.get("food_preferences") or current.get("food_preferences", []),
         "budget_level": profile_data.get("budget_level") or current.get("budget_level", ""),
         "note": profile_data.get("note") or current.get("note", ""),
+        "companions": profile_data.get("companions") or current.get("companions", []),
         "updated_at": _now_iso(),
     }
     profiles[user_id] = merged

@@ -325,9 +325,21 @@ async function onSubmit(payload: PlanPayload) {
   }, 700);
   
   try {
+    let profilePayload: any = {};
+    try {
+      const cached = localStorage.getItem("chaoyun_profile");
+      if (cached) {
+        const profile = JSON.parse(cached);
+        profilePayload = {
+           companions: profile.companions || []
+        };
+      }
+    } catch {}
+
     const res = await createPlan({
       ...payload,
       model: selectedModel || undefined,
+      companions: profilePayload.companions
     });
     result.value = res;
     stage.value = "final";

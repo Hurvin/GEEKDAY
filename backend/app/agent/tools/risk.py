@@ -16,4 +16,12 @@ def risk_radar(signals: dict, request: dict) -> list[str]:
 
     if "老人" in request.get("travelers", ""):
         alerts.append("同行含长辈，建议减少夜间跨区移动并提升休息频次。")
+        
+    companions = request.get("companions", [])
+    for person in companions:
+        name = person.get("name", "同行人员")
+        health = person.get("healthCondition", "")
+        if health:
+            alerts.append(f"注意 {name} 的特殊情况：{health}，请提前确认相关设施。")
+            
     return alerts

@@ -13,6 +13,13 @@ export interface PlanPayload {
   food_preference?: string[];
   accommodation_type?: string;
   transport_preference?: string;
+  companions?: Array<{
+    name: string;
+    relation: string;
+    ageGroup?: string;
+    healthCondition?: string;
+    preferences?: string[];
+  }>;
 }
 
 export interface PlanResult {

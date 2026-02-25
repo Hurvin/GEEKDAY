@@ -12,6 +12,7 @@ class PlanRequest(BaseModel):
     constraints: List[str] = Field(default_factory=list)
     budget_level: str = Field(default="中等")
     model: str | None = Field(default=None, description="可选模型ID，留空则使用默认模型")
+    companions: List[dict] = Field(default_factory=list, description="同行人员信息")
 
 
 class ItineraryItem(BaseModel):
