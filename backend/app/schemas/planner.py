@@ -71,6 +71,12 @@ class FakeEventConsumeResponse(BaseModel):
     events: List[FakeEvent] = Field(default_factory=list)
 
 
+class McpServiceParameter(BaseModel):
+    name: str
+    description: str
+    required: bool = True
+
 class McpServiceItem(BaseModel):
     name: str
     description: str
+    parameters: List[McpServiceParameter] = Field(default_factory=list)

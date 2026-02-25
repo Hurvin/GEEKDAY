@@ -25,9 +25,16 @@ export interface ChatResponse {
   model_used: string;
 }
 
+export interface McpServiceParameter {
+  name: string;
+  description: string;
+  required: boolean;
+}
+
 export interface McpServiceItem {
   name: string;
   description: string;
+  parameters: McpServiceParameter[];
 }
 
 export function sendChat(payload: ChatRequest): Promise<ChatResponse> {

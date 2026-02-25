@@ -10,6 +10,7 @@ from app.schemas.planner import (
     FakeEventCreate,
     FakeEvent,
     McpServiceItem,
+    McpServiceParameter,
     ModelOption,
     PlanRequest,
     PlanResponse,
@@ -107,11 +108,59 @@ def consume_fake_events(limit: int = 20) -> FakeEventConsumeResponse:
 @router.get("/mcp/services", response_model=list[McpServiceItem])
 def list_mcp_services() -> list[McpServiceItem]:
     return [
-        McpServiceItem(name="maps_weather", description="询问天气"),
-        McpServiceItem(name="maps_text_search", description="搜索地点"),
-        McpServiceItem(name="maps_around_search", description="周边推荐"),
-        McpServiceItem(name="maps_direction_driving", description="驾车导航"),
-        McpServiceItem(name="maps_direction_walking", description="步行导航"),
-        McpServiceItem(name="maps_bicycling", description="骑行导航"),
-        McpServiceItem(name="maps_direction_transit_integrated", description="公交地铁"),
+        McpServiceItem(
+            name="maps_weather", 
+            description="询问天气",
+            parameters=[
+                McpServiceParameter(name="location", description="城市或地点名称")
+            ]
+        ),
+        McpServiceItem(
+            name="maps_text_search", 
+            description="搜索地点",
+            parameters=[
+                McpServiceParameter(name="keyword", description="搜索关键词（如：牛肉火锅）"),
+                McpServiceParameter(name="location", description="搜索区域/城市", required=False)
+            ]
+        ),
+        McpServiceItem(
+            name="maps_around_search", 
+            description="周边推荐",
+            parameters=[
+                McpServiceParameter(name="location", description="中心点位置"),
+                McpServiceParameter(name="keyword", description="搜索类别（如：咖啡厅）")
+            ]
+        ),
+        McpServiceItem(
+            name="maps_direction_driving", 
+            description="驾车导航",
+            parameters=[
+                McpServiceParameter(name="origin", description="起点"),
+                McpServiceParameter(name="destination", description="终点")
+            ]
+        ),
+        McpServiceItem(
+            name="maps_direction_walking", 
+            description="步行导航",
+            parameters=[
+                McpServiceParameter(name="origin", description="起点"),
+                McpServiceParameter(name="destination", description="终点")
+            ]
+        ),
+        McpServiceItem(
+            name="maps_bicycling", 
+            description="骑行导航",
+            parameters=[
+                McpServiceParameter(name="origin", description="起点"),
+                McpServiceParameter(name="destination", description="终点")
+            ]
+        ),
+        McpServiceItem(
+            name="maps_direction_transit_integrated", 
+            description="公交地铁",
+            parameters=[
+                McpServiceParameter(name="origin", description="起点"),
+                McpServiceParameter(name="destination", description="终点")
+            ]
+        ),
     ]
