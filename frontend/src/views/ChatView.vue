@@ -5,6 +5,14 @@
       <p class="kicker">LANGGRAPH CONVERSATION</p>
       <h1>智能对话</h1>
       <p class="sub-title">直接和潮韵同行对话，咨询潮汕玩法、路线与文化建议。</p>
+      <div v-if="mcpServices.length > 0" class="mcp-services">
+        <p class="mcp-title">支持 MCP 服务：</p>
+        <div class="mcp-service-list">
+          <span v-for="service in mcpServices" :key="service.name" class="mcp-chip" :title="service.description">
+            {{ service.name }}
+          </span>
+        </div>
+      </div>
     </section>
 
     <section class="chat-shell glass-card">
@@ -46,20 +54,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 
-import { sendChat, type ChatMessage } from "../api/chat";
+import { fetchMcpServices, sendChat, type ChatMessage, type McpServiceItem } from "../api/chat";
 import SpotTooltip from "../components/SpotTooltip.vue";
 import { spotKeywords } from "../data/spots";
 
 const input = ref("");
 const loading = ref(false);
+const mcpServices = ref<McpServiceItem[]>([]);
 const messages = ref<ChatMessage[]>([
   {
     role: "assistant",
     content: "你好，我是潮韵同行。你可以问我潮汕景点、美食路线、避坑建议或行程安排。",
   },
 ]);
+
+onMounted(async () => {
+  try {
+    mcpServices.value = await fetchMcpServices();
+  } catch {
+    mcpServices.value = [];
+  }
+});
 
 function parseContent(content: string) {
   if (!content) return [{ type: 'text', text: '' }];
@@ -169,6 +186,32 @@ async function submitChat() {
   font-size: 0.8rem;
   color: var(--text-sub);
   margin-bottom: 4px;
+}
+
+.mcp-services {
+  margin-top: 10px;
+}
+
+.mcp-title {
+  margin: 0 0 8px;
+  color: var(--text-sub);
+  font-size: 0.9rem;
+}
+
+.mcp-service-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mcp-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(141, 161, 255, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-main);
+  font-size: 0.82rem;
 }
 
 .loading-modal {

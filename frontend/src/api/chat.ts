@@ -25,9 +25,18 @@ export interface ChatResponse {
   model_used: string;
 }
 
+export interface McpServiceItem {
+  name: string;
+  description: string;
+}
+
 export function sendChat(payload: ChatRequest): Promise<ChatResponse> {
   return request<ChatResponse>("/chat", {
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export function fetchMcpServices(): Promise<McpServiceItem[]> {
+  return request<McpServiceItem[]>("/mcp/services");
 }

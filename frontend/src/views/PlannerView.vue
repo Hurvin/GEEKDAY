@@ -44,6 +44,21 @@
       </div>
     </div>
 
+    <div v-if="crowdAlert.show" class="weather-modal-mask">
+      <div class="weather-modal">
+        <h3>⚠️ 人流量变化提醒</h3>
+        <p class="weather-desc">
+          监测到 <strong>{{ crowdAlert.destination }}</strong>
+          第 {{ crowdAlert.dayIndex }} 天人流量发生变化：<br/>
+          从「{{ crowdAlert.oldLevel }}」变为「<span class="highlight">{{ crowdAlert.newLevel }}</span>」
+        </p>
+        <p class="weather-hint">建议避开高峰时段或调整热门景点顺序。</p>
+        <div class="weather-actions">
+          <button class="neon-btn" @click="closeCrowdAlert">知道了</button>
+        </div>
+      </div>
+    </div>
+
     <div v-if="loading" class="loading-modal" role="status" aria-live="polite" aria-label="模型回复中">
       <div class="loading-modal-content">
         <img src="/jz.gif" alt="模型思考中" class="loading-modal-gif" />
@@ -58,7 +73,15 @@ import { ref, onMounted, onUnmounted, reactive } from "vue";
 import PlannerForm from "../components/PlannerForm.vue";
 import ResultPanel from "../components/ResultPanel.vue";
 import PlanHistory from "../components/PlanHistory.vue";
-import { createPlan, fetchWeather, type PlanPayload, type PlanResult, type SavedPlan } from "../api/planner";
+import {
+  createPlan,
+  fetchFakeEvents,
+  fetchWeather,
+  type FakeSignalEvent,
+  type PlanPayload,
+  type PlanResult,
+  type SavedPlan,
+} from "../api/planner";
 
 const loading = ref(false);
 const error = ref("");
@@ -75,8 +98,18 @@ const weatherAlert = reactive({
   oldCondition: "",
   newCondition: "",
 });
+const crowdAlert = reactive({
+  show: false,
+  destination: "",
+  dayIndex: 1,
+  oldLevel: "",
+  newLevel: "",
+});
+
+const pendingFakeEvents = ref<FakeSignalEvent[]>([]);
 const lastWeatherCondition = ref("");
 let weatherTimer: number | undefined;
+let fakeEventTimer: number | undefined;
 
 onMounted(() => {
   const saved = localStorage.getItem("chaoyun_plans");
@@ -96,11 +129,51 @@ onMounted(() => {
   // Test mode: 60 seconds (60,000 ms) - to ensure we catch the minute change
   const interval = isTestMode ? 60000 : 600000;
   weatherTimer = setInterval(checkWeather, interval);
+
+  // Fake signal events are used for rapid manual demo/testing.
+  fakeEventTimer = setInterval(consumeFakeEvents, 3000);
+  consumeFakeEvents();
 });
 
 onUnmounted(() => {
   if (weatherTimer) clearInterval(weatherTimer);
+  if (fakeEventTimer) clearInterval(fakeEventTimer);
 });
+
+function showNextFakeEvent() {
+  if (weatherAlert.show || crowdAlert.show || pendingFakeEvents.value.length === 0) {
+    return;
+  }
+
+  const evt = pendingFakeEvents.value.shift();
+  if (!evt) return;
+
+  if (evt.event_type === "weather") {
+    weatherAlert.destination = evt.destination || "当前目的地";
+    weatherAlert.dayIndex = evt.day_index || 1;
+    weatherAlert.oldCondition = evt.old_value || "未知";
+    weatherAlert.newCondition = evt.new_value || "未知";
+    weatherAlert.show = true;
+    return;
+  }
+
+  crowdAlert.destination = evt.destination || "当前目的地";
+  crowdAlert.dayIndex = evt.day_index || 1;
+  crowdAlert.oldLevel = evt.old_value || "未知";
+  crowdAlert.newLevel = evt.new_value || "未知";
+  crowdAlert.show = true;
+}
+
+async function consumeFakeEvents() {
+  try {
+    const resp = await fetchFakeEvents();
+    if (resp.events.length === 0) return;
+    pendingFakeEvents.value.push(...resp.events);
+    showNextFakeEvent();
+  } catch {
+    // Keep silent to avoid interrupting normal planner flow.
+  }
+}
 
 async function checkWeather() {
   // Only check if we have an active plan/result
@@ -166,6 +239,12 @@ async function checkWeather() {
 
 function ignoreWeatherChange() {
   weatherAlert.show = false;
+  showNextFakeEvent();
+}
+
+function closeCrowdAlert() {
+  crowdAlert.show = false;
+  showNextFakeEvent();
 }
 
 function regeneratePlan() {

@@ -3,8 +3,19 @@ from fastapi import APIRouter
 from app.agent.chat_graph import build_chat_graph
 from app.agent.graph import build_agent_graph
 from app.agent.tools.weather import get_weather_signal
-from app.schemas.planner import ChatRequest, ChatResponse, ModelOption, PlanRequest, PlanResponse
+from app.schemas.planner import (
+    ChatRequest,
+    ChatResponse,
+    FakeEventConsumeResponse,
+    FakeEventCreate,
+    FakeEvent,
+    McpServiceItem,
+    ModelOption,
+    PlanRequest,
+    PlanResponse,
+)
 from app.services.llm_client import LLMClient
+from app.services.fake_events import fake_event_store
 
 router = APIRouter()
 _graph = build_agent_graph()
@@ -81,3 +92,26 @@ def chat_with_agent(payload: ChatRequest) -> ChatResponse:
 @router.get("/models", response_model=list[ModelOption])
 def list_models() -> list[ModelOption]:
     return [ModelOption(**item) for item in LLMClient.get_model_catalog()]
+
+
+@router.post("/fake/events", response_model=FakeEvent)
+def create_fake_event(payload: FakeEventCreate) -> FakeEvent:
+    return fake_event_store.push(payload)
+
+
+@router.get("/fake/events/consume", response_model=FakeEventConsumeResponse)
+def consume_fake_events(limit: int = 20) -> FakeEventConsumeResponse:
+    return FakeEventConsumeResponse(events=fake_event_store.consume(limit=limit))
+
+
+@router.get("/mcp/services", response_model=list[McpServiceItem])
+def list_mcp_services() -> list[McpServiceItem]:
+    return [
+        McpServiceItem(name="maps_weather", description="查询目的地天气与变化趋势"),
+        McpServiceItem(name="maps_text_search", description="关键词检索景点/美食/地点"),
+        McpServiceItem(name="maps_around_search", description="按位置查找周边服务与设施"),
+        McpServiceItem(name="maps_direction_driving", description="驾车路线与时长估算"),
+        McpServiceItem(name="maps_direction_walking", description="步行路线与时长估算"),
+        McpServiceItem(name="maps_bicycling", description="骑行路线与时长估算"),
+        McpServiceItem(name="maps_direction_transit_integrated", description="公交/地铁换乘路线建议"),
+    ]

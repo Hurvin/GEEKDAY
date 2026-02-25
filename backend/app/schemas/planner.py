@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Literal
 
 from pydantic import BaseModel, Field
 
@@ -51,3 +51,26 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     reply: str
     model_used: str
+
+
+class FakeEventCreate(BaseModel):
+    event_type: Literal["weather", "crowd"] = Field(..., description="事件类型")
+    destination: str = Field(default="", description="目的地")
+    day_index: int = Field(default=1, ge=1, description="第几天")
+    old_value: str = Field(default="", description="变化前值")
+    new_value: str = Field(default="", description="变化后值")
+    note: str = Field(default="", description="补充说明")
+
+
+class FakeEvent(FakeEventCreate):
+    id: str
+    created_at: int
+
+
+class FakeEventConsumeResponse(BaseModel):
+    events: List[FakeEvent] = Field(default_factory=list)
+
+
+class McpServiceItem(BaseModel):
+    name: str
+    description: str

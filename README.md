@@ -77,6 +77,22 @@ curl -X POST http://localhost:8000/api/v1/plan \
   }'
 ```
 
+### 命令行触发天气/人流量变化（用于前端弹窗联调）
+
+先确保后端已启动，然后在 `backend/` 目录执行：
+
+```bash
+python scripts/fake_event_cli.py --type weather --destination 潮州 --day 1 --old 晴朗 --new 雷阵雨 --note "命令行模拟天气变化"
+```
+
+或触发人流量变化：
+
+```bash
+python scripts/fake_event_cli.py --type crowd --destination 汕头 --day 2 --old 中 --new 高 --note "命令行模拟人流量变化"
+```
+
+前端行程规划页会每 3 秒消费一次 fake 事件并弹窗提示。
+
 ## 6. MCP Server
 
 已在 `backend/app/services/mcp_server.py` 提供工具：

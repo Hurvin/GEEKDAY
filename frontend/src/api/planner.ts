@@ -51,6 +51,21 @@ export interface SavedPlan {
   result: PlanResult;
 }
 
+export interface FakeSignalEvent {
+  id: string;
+  created_at: number;
+  event_type: "weather" | "crowd";
+  destination: string;
+  day_index: number;
+  old_value: string;
+  new_value: string;
+  note: string;
+}
+
+export interface FakeSignalEventResponse {
+  events: FakeSignalEvent[];
+}
+
 export function createPlan(payload: PlanPayload): Promise<PlanResult> {
   return request<PlanResult>("/plan", {
     method: "POST",
@@ -65,4 +80,8 @@ export function fetchModels(): Promise<ModelOption[]> {
 export function fetchWeather(city: string, days: number = 1): Promise<any> {
   const isTestMode = localStorage.getItem("chaoyun_test_mode") === "true";
   return request<any>(`/weather?city=${encodeURIComponent(city)}&days=${days}&test_mode=${isTestMode}`);
+}
+
+export function fetchFakeEvents(): Promise<FakeSignalEventResponse> {
+  return request<FakeSignalEventResponse>("/fake/events/consume?limit=20");
 }
