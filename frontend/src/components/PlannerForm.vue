@@ -90,6 +90,21 @@
     <!-- 补充信息 -->
     <div class="form-section">
       <h3>补充需求</h3>
+      
+      <div v-if="availableCompanions.length > 0" class="companions-selection">
+        <label>选择同行人员 (从我的档案)</label>
+        <div class="checkbox-group">
+          <label v-for="person in availableCompanions" :key="person.name">
+            <input 
+              type="checkbox" 
+              :value="person" 
+              v-model="selectedCompanions"
+            >
+            {{ person.name }} ({{ person.relation }})
+          </label>
+        </div>
+      </div>
+
       <label>
         其他偏好
         <input v-model="preferencesText" placeholder="例如：想看日出、对海鲜过敏..." />
@@ -103,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from "vue";
+import { reactive, ref, onMounted } from "vue";
 import type { PlanPayload } from "../api/planner";
 
 defineProps<{ loading: boolean }>();
@@ -133,6 +148,31 @@ const form = reactive<PlanPayload & {
 
 const preferencesText = ref("");
 
+// Companions
+const availableCompanions = ref<any[]>([]);
+const selectedCompanions = ref<any[]>([]);
+
+onMounted(() => {
+  try {
+    const cached = localStorage.getItem("chaoyun_profile");
+    if (cached) {
+      const profile = JSON.parse(cached);
+      if (profile.companions && Array.isArray(profile.companions)) {
+        availableCompanions.value = profile.companions;
+      }
+      
+      // Auto-fill form defaults from profile
+      if (profile.clothingStyle) form.clothing_style = profile.clothingStyle;
+      if (profile.foodPreferences) form.food_preference = profile.foodPreferences;
+      if (profile.accommodationType) form.accommodation_type = profile.accommodationType;
+      if (profile.transportPreference) form.transport_preference = profile.transportPreference;
+      if (profile.budgetLevel) form.budget_level = profile.budgetLevel;
+    }
+  } catch (e) {
+    console.error("Failed to load profile", e);
+  }
+});
+
 function submitForm() {
   // Combine all preferences into the main array for backend compatibility
   const combinedPreferences = [
@@ -147,6 +187,7 @@ function submitForm() {
     ...form,
     preferences: combinedPreferences,
     constraints: [], // Constraints can be handled in text if needed
+    companions: selectedCompanions.value,
   });
 }
 
@@ -243,6 +284,17 @@ input:focus, select:focus {
   color: var(--accent);
 }
 
+.companions-selection {
+  margin-bottom: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.companions-selection label {
+  margin-bottom: 8px;
+  font-weight: bold;
+}
 .submit-btn {
   margin-top: 12px;
   width: 100%;
