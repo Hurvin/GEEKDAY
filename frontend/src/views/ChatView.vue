@@ -27,14 +27,6 @@
       </p>
     </div>
     
-    <!-- AI Thinking Indicator -->
-    <div v-if="loading" class="chat-item chat-assistant">
-      <p class="chat-role">Agent</p>
-      <div class="chat-thinking">
-        <img src="/jz.gif" alt="Thinking..." class="thinking-gif" />
-        <span class="thinking-text">正在思考中...</span>
-      </div>
-    </div>
   </div>
 
   <form class="chat-input-row" @submit.prevent="submitChat">
@@ -44,6 +36,12 @@
         </button>
       </form>
     </section>
+
+    <div v-if="loading" class="loading-modal" role="status" aria-live="polite" aria-label="模型回复中">
+      <div class="loading-modal-content">
+        <img src="/jz.gif" alt="模型思考中" class="loading-modal-gif" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -173,32 +171,27 @@ async function submitChat() {
   margin-bottom: 4px;
 }
 
-.chat-thinking {
-  display: inline-flex;
+.loading-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
   align-items: center;
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 1px solid rgba(110, 141, 255, 0.2);
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
 }
 
-.thinking-gif {
-  height: 40px;
-  width: auto;
-  border-radius: 4px;
+.loading-modal-content {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(14, 23, 56, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.thinking-text {
-  color: var(--text-sub);
-  font-size: 0.9rem;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+.loading-modal-gif {
+  display: block;
+  width: min(60vw, 360px);
+  height: auto;
 }
 
 .chat-text {

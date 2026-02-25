@@ -43,6 +43,12 @@
         </div>
       </div>
     </div>
+
+    <div v-if="loading" class="loading-modal" role="status" aria-live="polite" aria-label="模型回复中">
+      <div class="loading-modal-content">
+        <img src="/jz.gif" alt="模型思考中" class="loading-modal-gif" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -287,6 +293,29 @@ async function onSubmit(payload: PlanPayload) {
   align-items: center;
   justify-content: center;
   z-index: 2000;
+}
+
+.loading-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.loading-modal-content {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(14, 23, 56, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.loading-modal-gif {
+  display: block;
+  width: min(60vw, 360px);
+  height: auto;
 }
 
 .weather-modal {
