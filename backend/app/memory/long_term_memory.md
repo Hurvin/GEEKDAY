@@ -8,6 +8,7 @@
 - food_preferences: 不吃辣, 牛肉火锅, 卤鹅
 - budget_level: 中等
 - note: 海鲜过敏
+- companions: []
 
 ## Culture Rules
 - 14:00-16:00 是潮汕午休高频时段，建议安排茶馆、展馆等轻活动。

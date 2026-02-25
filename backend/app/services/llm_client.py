@@ -57,6 +57,7 @@ class LLMClient:
                     "JSON 字段必须包含：summary(字符串), itinerary(数组), culture_tips(字符串数组), "
                     "risk_alerts(字符串数组), signal_basis(字符串数组)。"
                     "其中 itinerary 的每一项包含 day(数字), period(字符串), activity(字符串), reason(字符串)。"
+                    "如果用户提供了天气变化的约束，请优先调整受影响时段的活动，其他行程尽量保持原样。"
                 ),
             },
             {

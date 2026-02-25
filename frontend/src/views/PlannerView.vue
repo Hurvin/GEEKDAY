@@ -251,8 +251,19 @@ function regeneratePlan() {
   weatherAlert.show = false;
   const currentPlan = history.value.find(p => p.id === activePlanId.value);
   if (currentPlan) {
-    // Re-submit the same payload
-    onSubmit(currentPlan.payload);
+    // Add weather context to constraints
+    const newPayload = { ...currentPlan.payload };
+    const weatherInfo = `监测到第 ${weatherAlert.dayIndex} 天天气变为 ${weatherAlert.newCondition} (原为 ${weatherAlert.oldCondition})`;
+    const instruction = "请只重新安排受天气影响的行程部分，其他行程尽量保持不变，灵活调整。";
+    
+    newPayload.constraints = [
+      ...(newPayload.constraints || []),
+      weatherInfo,
+      instruction
+    ];
+    
+    // Re-submit
+    onSubmit(newPayload);
   }
 }
 
