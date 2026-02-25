@@ -7,6 +7,39 @@
     </section>
 
     <form class="glass-card form" @submit.prevent="saveProfile">
+      <!-- 出行日历 -->
+      <div class="form-section">
+        <h3>出行日历</h3>
+        <p class="section-desc">标记你的空闲时间或计划出行的日期，Agent 会根据天气和人流量推荐最佳行程。</p>
+        <div class="calendar-wrapper">
+          <div class="calendar-header">
+            <button type="button" @click="changeMonth(-1)">&lt;</button>
+            <span>{{ currentYear }}年 {{ currentMonth + 1 }}月</span>
+            <button type="button" @click="changeMonth(1)">&gt;</button>
+          </div>
+          <div class="calendar-grid">
+            <div class="weekday" v-for="day in weekdays" :key="day">{{ day }}</div>
+            <div 
+              v-for="date in calendarDates" 
+              :key="date.dateStr"
+              class="calendar-cell"
+              :class="{ 
+                'empty': !date.day,
+                'selected': isSelected(date.dateStr),
+                'today': isToday(date.dateStr)
+              }"
+              @click="toggleDate(date.dateStr)"
+            >
+              {{ date.day }}
+            </div>
+          </div>
+          <div class="selected-dates" v-if="profile.travelDates && profile.travelDates.length > 0">
+            已选日期：{{ profile.travelDates.sort().join(', ') }}
+          </div>
+          <p class="calendar-hint">提示：点击选择出行日期，再次点击取消。最多可选7天。</p>
+        </div>
+      </div>
+
       <!-- 基础信息 -->
       <div class="form-section">
         <h3>基础信息</h3>
@@ -188,9 +221,10 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from "vue";
+import { reactive, ref, onMounted, computed } from "vue";
 
 const foodOptions = ["牛肉火锅", "生腌", "卤鹅", "肠粉/粿条", "功夫茶", "甜汤", "深夜大排档"];
+const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
 
 type Companion = {
   name: string;
@@ -211,6 +245,7 @@ type ProfileData = {
   transportPreference: string;
   note: string;
   companions: Companion[];
+  travelDates: string[];
 };
 
 const profile = reactive<ProfileData>({
@@ -224,7 +259,74 @@ const profile = reactive<ProfileData>({
   transportPreference: "网约车/出租车",
   note: "",
   companions: [],
+  travelDates: [],
 });
+
+// Calendar Logic
+const today = new Date();
+const currentYear = ref(today.getFullYear());
+const currentMonth = ref(today.getMonth());
+
+const calendarDates = computed(() => {
+  const firstDay = new Date(currentYear.value, currentMonth.value, 1);
+  const lastDay = new Date(currentYear.value, currentMonth.value + 1, 0);
+  const daysInMonth = lastDay.getDate();
+  const startDayOfWeek = firstDay.getDay();
+  
+  const dates = [];
+  // Empty slots before 1st day
+  for (let i = 0; i < startDayOfWeek; i++) {
+    dates.push({ day: 0, dateStr: `empty-${i}` });
+  }
+  // Days
+  for (let i = 1; i <= daysInMonth; i++) {
+    const monthStr = (currentMonth.value + 1).toString().padStart(2, '0');
+    const dayStr = i.toString().padStart(2, '0');
+    dates.push({ 
+      day: i, 
+      dateStr: `${currentYear.value}-${monthStr}-${dayStr}` 
+    });
+  }
+  return dates;
+});
+
+function changeMonth(delta: number) {
+  let newMonth = currentMonth.value + delta;
+  if (newMonth > 11) {
+    currentYear.value++;
+    newMonth = 0;
+  } else if (newMonth < 0) {
+    currentYear.value--;
+    newMonth = 11;
+  }
+  currentMonth.value = newMonth;
+}
+
+function isSelected(dateStr: string) {
+  return profile.travelDates.includes(dateStr);
+}
+
+function isToday(dateStr: string) {
+  const t = new Date();
+  const todayStr = `${t.getFullYear()}-${(t.getMonth()+1).toString().padStart(2,'0')}-${t.getDate().toString().padStart(2,'0')}`;
+  return dateStr === todayStr;
+}
+
+function toggleDate(dateStr: string) {
+  if (dateStr.startsWith('empty')) return;
+  
+  const idx = profile.travelDates.indexOf(dateStr);
+  if (idx > -1) {
+    profile.travelDates.splice(idx, 1);
+  } else {
+    // Only allow max 7 days for now to keep it simple
+    if (profile.travelDates.length >= 7) {
+      alert("最多选择7天行程");
+      return;
+    }
+    profile.travelDates.push(dateStr);
+  }
+}
 
 const isEditingCompanion = ref(false);
 const editingIndex = ref(-1);
@@ -317,6 +419,7 @@ onMounted(() => {
       profile.transportPreference = parsed.transportPreference ?? "网约车/出租车";
       profile.note = parsed.note ?? "";
       profile.companions = Array.isArray(parsed.companions) ? parsed.companions : [];
+      profile.travelDates = Array.isArray(parsed.travelDates) ? parsed.travelDates : [];
     } catch (e) {
       console.error("Failed to parse profile", e);
     }
@@ -534,5 +637,91 @@ input:focus, select:focus, textarea:focus {
   margin: -10px 0 16px;
   color: var(--text-sub);
   font-size: 0.9rem;
+}
+
+.calendar-wrapper {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: bold;
+  color: var(--text-main);
+}
+
+.calendar-header button {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  text-align: center;
+}
+
+.weekday {
+  font-size: 0.8rem;
+  color: var(--text-sub);
+  margin-bottom: 4px;
+}
+
+.calendar-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  color: var(--text-main);
+}
+
+.calendar-cell.empty {
+  background: transparent;
+  cursor: default;
+}
+
+.calendar-cell:not(.empty):hover {
+  background: rgba(255,255,255,0.15);
+}
+
+.calendar-cell.selected {
+  background: var(--accent);
+  color: #000;
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(78, 245, 214, 0.4);
+}
+
+.calendar-cell.today {
+  border: 1px solid var(--accent);
+}
+
+.selected-dates {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--text-sub);
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.calendar-hint {
+  font-size: 0.8rem;
+  color: var(--text-sub);
+  margin: 8px 0 0;
+  opacity: 0.7;
 }
 </style>
